@@ -1,0 +1,1839 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
+    <title>Inviterania</title>
+
+    <style>
+      /* ==========================================================
+   style.css — Inviterania
+
+   Daftar isi (cari dengan Ctrl+F nomor atau judulnya):
+   1. Pengaturan dasar
+   2. Tombol umum
+   3. Navbar & menu mobile
+   4. Hero (termasuk teks yang berganti-ganti)
+   5. Judul section (dipakai bersama)
+   6. Katalog tema
+   7. Cara kerja
+
+   Cara membaca: aturan untuk mobile ditulis lebih dulu.
+   Layar yang lebih lebar menimpanya lewat @media (min-width: ...)
+   yang diletakkan di bagian bawah tiap section.
+   ========================================================== */
+
+
+/* ==========================================================
+   1. PENGATURAN DASAR
+   ========================================================== */
+
+:root {
+  /* Font */
+  --font-body: "Lato", sans-serif;
+  --font-heading: "Google Sans", sans-serif;
+
+  /* Warna utama */
+  --color-dark: #1a1a1a;
+  --color-light: #fff;
+  --color-soft: #f7f4ef; /* krem sangat muda, untuk section terang selain katalog */ 
+
+  /* Jarak agar judul section tidak tertutup navbar saat menu diklik */
+  --navbar-offset: 4.5rem;
+}
+
+h1, h2, h3 {
+  font-family: "Google Sans", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--navbar-offset);
+}
+
+html,
+body {
+  touch-action: manipulation; /* mematikan double-tap zoom, scroll tetap normal */
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+}
+
+/* Saat menu mobile terbuka, halaman di belakangnya tidak ikut scroll */
+body.menu-open {
+  overflow: hidden;
+}
+
+/* Pengguna yang mengaktifkan "kurangi gerakan" tidak mendapat scroll halus */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+
+/* ==========================================================
+   2. TOMBOL UMUM
+   .btn       = tombol putih (untuk latar gelap)
+   .btn-dark  = variasi tombol gelap (untuk latar terang)
+   ========================================================== */
+
+.btn {
+  display: inline-block;
+  width: 100%;
+  max-width: 260px;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--color-light);
+  border-radius: 999px;
+  background: var(--color-light);
+  color: var(--color-dark);
+  font-size: 0.7rem;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.btn-dark {
+  background: var(--color-dark);
+  border-color: var(--color-dark);
+  color: var(--color-light);
+}
+
+
+/* ==========================================================
+   3. NAVBAR & MENU MOBILE
+   ========================================================== */
+
+/* ----- Header: menempel di atas layar ----- */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+/* Latar blur. Dibuat di ::before (bukan di header) supaya overlay dan panel
+   menu yang berada di dalam header tetap bisa menutupi seluruh layar. */
+header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1; /* di belakang logo, menu, dan tombol */
+  background: rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  opacity: 0; /* di atas hero: transparan penuh */
+  transition: opacity 0.3s ease;
+}
+
+/* Class is-scrolled ditambahkan oleh script.js saat halaman digulir */
+header.is-scrolled::before {
+  opacity: 1;
+}
+
+/* ----- Baris navbar: logo, menu, tombol ----- */
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+}
+
+.logo {
+  margin-right: auto; /* mendorong elemen lain ke kanan */
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  color: var(--color-light);
+  text-decoration: none;
+}
+
+/* ----- Tombol kecil di navbar ----- */
+.btn-order,
+.nav-toggle {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-order,
+.btn-login,
+.nav-toggle {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.btn-order {
+  background: var(--color-dark);
+  color: var(--color-light);
+  text-decoration: none;
+}
+
+.nav-toggle {
+  position: relative;
+  z-index: 300; /* di atas panel menu, supaya tetap bisa dipakai untuk menutup */
+  background: transparent;
+  border: 1px solid var(--color-light);
+  color: var(--color-light);
+}
+
+/* Login: di mobile hanya muncul saat menu terbuka */
+.btn-login {
+  display: none;
+  position: relative;
+  z-index: 300; /* di atas panel menu, seperti tombol Tutup */
+  border: 1px solid var(--color-light);
+  background: transparent;
+  color: var(--color-light);
+  text-decoration: none;
+}
+
+/* Saat menu terbuka: Buat undangan diganti Login di sebelah tombol Tutup */
+body.menu-open .btn-order {
+  display: none;
+}
+
+body.menu-open .btn-login {
+  display: inline-block;
+  background: var(--color-light);
+  color: var(--color-dark);
+}
+
+.label-desktop {
+  display: none;
+}
+
+/* ----- Menu: di mobile berupa panel yang meluncur dari kanan ----- */
+.nav-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 200;
+  width: min(60%, 320px);
+  height: 100vh;
+  height: 100dvh; /* dipakai browser yang mendukung; menyesuaikan address bar HP */
+  margin: 0;
+  padding: 5rem 2rem 2rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.25);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+
+  /* Keadaan tertutup: digeser keluar layar dan disembunyikan,
+     supaya link tidak bisa difokus lewat tombol Tab */
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 0.3s ease, visibility 0.3s;
+}
+
+/* Keadaan terbuka: class menu-open ditambahkan ke <body> oleh script.js */
+body.menu-open .nav-menu {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+/* Garis pemisah antar link */
+.nav-menu li {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-menu a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  color: var(--color-light);
+  font-size: 1.1rem;
+  text-decoration: none;
+}
+
+/* Panah kecil di ujung kanan tiap link */
+.nav-menu a::after {
+  content: "›";
+  font-size: 1.5rem;
+  opacity: 0.6;
+}
+
+.nav-menu a:active {
+  opacity: 0.6;
+}
+
+/* ----- Overlay gelap di belakang panel menu ----- */
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+body.menu-open .nav-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Dipasang sementara oleh script.js saat jendela diubah ukurannya,
+   agar menu tidak terlihat meluncur sendiri */
+.no-transition .nav-menu,
+.no-transition .nav-overlay {
+  transition: none;
+}
+
+/* ----- Navbar di desktop (layar 768px ke atas) ----- */
+@media (min-width: 1024px) {
+  /* Jarak kiri-kanan navbar (logo dan tombol dari tepi layar) */
+  .navbar {
+    padding-inline: 4rem;
+  }
+  .logo {
+    margin-right: 0;
+  }
+
+  /* Tombol menu dan overlay hanya untuk mobile */
+  .nav-toggle,
+  .nav-overlay {
+    display: none;
+  }
+
+  /* Menu menjadi baris horizontal di tengah, di antara logo dan tombol */
+  .nav-menu {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 auto;
+    padding: 0;
+    flex-direction: row;
+    gap: 2rem;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    transform: none;
+    visibility: visible;
+  }
+
+  .nav-menu li {
+    border-bottom: none;
+  }
+
+  .nav-menu a {
+    display: inline;
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+  }
+
+  .nav-menu a::after {
+    content: none; /* panah hanya untuk mobile */
+  }
+
+  .nav-menu a:hover,
+  .nav-menu a:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 6px;
+  }
+}
+
+
+/* ==========================================================
+   4. HERO
+   ========================================================== */
+
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center; /* konten di tengah secara vertikal */
+  justify-content: center; /* konten di tengah secara horizontal */
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 6rem 1.5rem 1rem; /* bagian atas besar agar tidak tertutup navbar */
+  text-align: center;
+  color: var(--color-light);
+
+  /* Lapisan atas: overlay gelap. Lapisan bawah: foto.
+     Foto masih sementara; ganti dengan foto sendiri. */
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
+    url("https://attarivitation.com/wp-content/uploads/2024/05/SLIDESHOW-01.webp");
+  background-size: cover;
+  background-position: center;
+}
+
+.hero-content {
+  max-width: 50rem;
+}
+
+.hero-label {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0 0 1rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 7vw, 3rem); /* minimal 1.5rem, maksimal 3rem */
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.hero-desc {
+  max-width: 32rem;
+  margin: 0 auto 2rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+/* Dua tombol hero bertumpuk (di mobile maupun desktop) */
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ----- Teks yang berganti-ganti di judul hero -----
+   Logikanya ada di script.js (bagian "Hero: teks berganti") */
+
+/* Frasa selalu di baris sendiri agar tinggi judul stabil */
+.rotator {
+  display: block;
+}
+
+/* Kotak pembungkus teks dan kursor; lebarnya dianimasikan oleh script.js */
+.rotator-inner {
+  position: relative;
+  display: inline-block;
+  text-align: left; /* teks selalu menempel ke tepi kiri kotak */
+  white-space: nowrap; /* supaya lebar teks bisa diukur dengan benar */
+}
+
+/* clip-path dipakai untuk efek menyapu: teks "dipotong" lalu dibuka pelan-pelan.
+   Nilai negatif memberi ruang agar huruf berekor (g, y, p) tidak terpotong. */
+.rotator-text {
+  display: inline-block;
+  clip-path: inset(-0.2em -0.1em -0.2em 0);
+}
+
+/* Kursor berupa batang tipis di ujung teks */
+.rotator-caret {
+  position: absolute;
+  top: 0.12em;
+  left: 100%;
+  width: 0.06em;
+  height: 0.85em;
+  margin-left: 0.04em;
+  background: currentColor;
+}
+
+/* Kursor hanya berkedip saat animasi sedang diam */
+.rotator.is-idle .rotator-caret {
+  animation: caret-blink 1.1s ease-in-out infinite;
+}
+
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+
+/* ==========================================================
+   5. JUDUL SECTION (dipakai Katalog dan Cara Kerja)
+   Warna teks mengikuti warna section masing-masing.
+   ========================================================== */
+
+.section-head {
+  max-width: 36rem;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.section-head h2,
+.guestbook-text h2 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-family: "Google Sans", sans-serif;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+/* Label kecil berbentuk pil di atas judul (mis. "Layanan tambahan") */
+.section-label {
+  display: inline-block;
+  margin: 0 0 1rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.section-head p:not(.section-label) {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+
+/* ==========================================================
+   6. KATALOG TEMA
+   Kolom: 2 di HP, 3 di tablet, 4 di desktop
+   ========================================================== */
+
+.catalog {
+  padding: 4rem 1.5rem;
+  background: var(--color-light);
+  color: var(--color-dark);
+}
+
+/* ----- Grid kartu ----- */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+/* ----- Satu kartu tema ----- */
+.theme-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Semua gambar dipaksa rasio 4:5 agar baris tetap rata */
+.theme-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+
+/* Area nama dan harga mengisi sisa tinggi kartu,
+   sehingga tombol Preview selalu berada di bagian bawah */
+.theme-info {
+  flex-grow: 1;
+  padding: 0.75rem 0;
+}
+
+.theme-info h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.theme-price {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.price-now {
+  font-weight: 600;
+}
+
+.price-old {
+  margin-left: 0.4rem;
+  color: red;
+}
+
+/* Tombol Preview: selebar kartu dan sedikit lebih kecil dari tombol biasa */
+.theme-card .btn {
+  width: 100%;
+  max-width: none;
+  padding: 0.6rem 1rem;
+  font-size: 0.7rem;
+}
+
+/* ----- Katalog di layar yang lebih lebar ----- */
+@media (min-width: 640px) {
+  .catalog-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .catalog {
+    padding: 6rem clamp(2rem, 5vw, 5rem);
+  }
+    /* Di desktop, Login selalu terlihat */
+  .btn-login {
+    display: inline-block;
+  }
+}
+
+@media (min-width: 960px) {
+  .catalog-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+
+/* ==========================================================
+   7. CARA KERJA
+   Latar: foto yang diburamkan dengan overlay gelap
+   ========================================================== */
+
+.how {
+  position: relative;
+  isolation: isolate; /* lapisan latar tetap berada di dalam section ini */
+  overflow: hidden; /* tepi foto yang diburamkan terpotong rapi */
+  padding: 4rem 1.5rem;
+  color: var(--color-light);
+}
+
+/* Lapisan latar dibuat di ::before supaya hanya fotonya yang buram,
+   bukan teks di atasnya */
+.how::before {
+  content: "";
+  position: absolute;
+  inset: -2rem; /* sedikit melebihi section agar tepi blur tidak terlihat pudar */
+  z-index: -1;
+  /* Foto masih sementara; ganti dengan foto sendiri */
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)),
+    url("https://attarivitation.com/wp-content/uploads/2024/05/SLIDESHOW-01.webp")
+      center / cover no-repeat;
+  filter: blur(8px);
+}
+
+.how .section-head p {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ----- Daftar langkah ----- */
+.steps {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1.75rem;
+  counter-reset: step; /* mulai hitungan nomor dari awal */
+}
+
+/* Mobile: nomor di kiri, judul dan penjelasan di kanan */
+.step {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 1rem;
+}
+
+/* Lingkaran bernomor, dibuat otomatis dari counter */
+.step::before {
+  content: counter(step);
+  grid-row: 1 / span 2; /* mencakup baris judul dan penjelasan */
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+}
+
+.step h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.step p {
+  margin: 0;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.8rem;
+}
+
+/* ----- Tombol di bawah daftar langkah ----- */
+.how-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.how-cta .btn {
+  width: auto;
+  max-width: none;
+  padding: 0.75rem 2rem;
+  border-color: rgba(255, 255, 255, 0.5); /* batas terang agar tombol gelap terbaca di latar gelap */
+}
+
+/* ----- Cara kerja di layar yang lebih lebar ----- */
+@media (min-width: 768px) {
+  .label-mobile {
+    display: none;
+  }
+  .label-desktop {
+    display: inline;
+  }
+  .how {
+    padding: 6rem clamp(2rem, 5vw, 5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Empat langkah berjajar; nomor di atas, teks di bawah, rata tengah */
+  .steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2rem;
+  }
+
+  .step {
+    display: block;
+    text-align: center;
+  }
+
+  .step::before {
+    margin: 0 auto 1rem;
+  }
+}
+/* ==========================================================
+   8. BUKU TAMU DIGITAL
+   Mobile: teks lalu gambar, bertumpuk.
+   Desktop: dua kolom, teks di kiri dan gambar di kanan.
+   ========================================================== */
+
+.guestbook {
+  display: grid;
+  padding: 4rem 1.5rem;
+  background: var(--color-soft);
+  color: var(--color-dark);
+}
+/* Mobile: pembungkus teks "dilebur" supaya gambar bisa diselipkan
+   di antara pengantar dan daftar poin lewat properti order */
+.guestbook-text {
+  display: contents;
+}
+
+.guestbook .section-label {
+  order: 1;
+  justify-self: start; /* label tidak melebar selebar kolom */
+}
+
+.guestbook h2 {
+  order: 2;
+}
+
+.guestbook-intro {
+  order: 3;
+}
+
+.guestbook img {
+  order: 4;
+  margin-bottom: 1.75rem;
+}
+
+.guestbook-points {
+  order: 5;
+}
+
+.guestbook .btn {
+  order: 6;
+  justify-self: start; /* tombol tetap selebar isinya */
+}
+.guestbook-intro {
+  margin: 0 0 1.75rem;
+  line-height: 1.6;
+}
+
+/* ----- Daftar poin dengan tanda centang ----- */
+.guestbook-points {
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.guestbook-points li {
+  position: relative;
+  padding-left: 1.75rem; /* ruang untuk tanda centang */
+}
+
+/* Tanda centang digambar dengan CSS (dua sisi border yang diputar) */
+.guestbook-points li::before {
+  content: "";
+  position: absolute;
+  left: 0.2rem;
+  top: 0.15rem;
+  width: 0.4rem;
+  height: 0.75rem;
+  border: solid var(--color-dark);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.guestbook-points h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.guestbook-points p {
+  margin: 0;
+  line-height: 1.6;
+  color: rgba(26, 26, 26, 0.75);
+}
+
+.guestbook .btn {
+  width: auto;
+  max-width: none;
+  padding: 0.75rem 2rem;
+}
+
+/* Gambar dikunci rasionya agar tampilan stabil walau gambar diganti */
+.guestbook img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 7 / 4;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+
+/* ----- Buku tamu di layar yang lebih lebar ----- */
+@media (min-width: 768px) {
+  .guestbook {
+    padding-block: 6rem;
+    /* Jarak kiri-kanan minimal sama dengan section lain; di layar sangat lebar,
+       isi dibatasi 72rem dan berada di tengah */
+    padding-inline: max(clamp(2rem, 5vw, 5rem), calc((100% - 72rem) / 2));
+  }
+}
+
+@media (min-width: 960px) {
+  .guestbook {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4rem;
+    align-items: center;
+  }
+
+  /* Pembungkus kembali jadi kolom kiri */
+  .guestbook-text {
+    display: block;
+  }
+
+  .guestbook img {
+    order: 0;
+    margin-bottom: 0;
+  }
+}
+
+/* ==========================================================
+   9. PARTNERSHIP
+   Latar gelap polos. Keunggulan: 1 kolom di HP, 2 di tablet,
+   4 di desktop.
+   ========================================================== */
+
+.partnership {
+  padding: 4rem 1.5rem;
+  background: var(--color-dark);
+  color: var(--color-light);
+}
+
+.partnership .section-head p:not(.section-label) {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ----- Kartu keunggulan ----- */
+.partnership-benefits {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+}
+
+.benefit {
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.benefit h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.benefit p {
+  margin: 0;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ----- Ajakan di bawah kartu ----- */
+.partnership-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.partnership-cta .btn {
+  width: auto;
+  max-width: none;
+  padding: 0.75rem 2rem;
+}
+
+.partnership-link {
+  color: var(--color-light);
+  font-size: 0.9rem;
+  text-underline-offset: 4px;
+}
+
+/* ----- partnership di layar yang lebih lebar ----- */
+@media (min-width: 640px) {
+  .partnership-benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Tombol dan tautan berdampingan */
+  .partnership-cta {
+    flex-direction: row;
+    justify-content: center;
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .partnership {
+    padding: 6rem clamp(2rem, 5vw, 5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .partnership-benefits {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* 10.FAQ */
+
+.faq {
+  padding: 4rem 1.5rem;
+  background: var(--color-light);
+  color: var(--color-dark);
+}
+
+/* ----- Kelompok pertanyaan ----- */
+.faq-groups {
+  display: grid;
+  gap: 2.5rem;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.faq-group h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 26, 0.6);
+}
+
+/* ----- Satu pertanyaan ----- */
+.faq-item {
+  border-bottom: 1px solid rgba(26, 26, 26, 0.15);
+}
+
+/* Garis di atas pertanyaan pertama tiap kelompok */
+.faq-item:first-of-type {
+  border-top: 1px solid rgba(26, 26, 26, 0.15);
+}
+
+.faq-item summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  list-style: none; /* menghapus segitiga bawaan browser */
+  cursor: pointer;
+}
+
+/* Safari */
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Tanda + di kanan; berputar jadi × saat terbuka */
+.faq-item summary::after {
+  content: "+";
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.faq-item[open]:not(.is-closing) summary::after {
+  transform: rotate(45deg);
+}
+
+.faq-item summary:focus-visible {
+  outline: 2px solid var(--color-dark);
+  outline-offset: -2px;
+}
+
+/* ----- Jawaban ----- */
+.faq-item p {
+  margin: 0 0 1rem;
+  padding-right: 2.5rem; /* tidak sampai ke tepi kanan, sejajar dengan area tanda + */
+  line-height: 1.7;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: rgba(26, 26, 26, 0.75);
+}
+
+.faq-item a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+/* ----- Tautan "Lihat semua pertanyaan" ----- */
+.faq-more {
+  margin: 2.5rem 0 0;
+  text-align: center;
+}
+
+.faq-more a {
+  color: var(--color-dark);
+  text-underline-offset: 4px;
+}
+
+/* ----- FAQ di layar yang lebih lebar ----- */
+@media (min-width: 768px) {
+  .faq {
+    padding: 6rem clamp(2rem, 5vw, 5rem);
+  }
+}
+
+    </style>
+
+    <!-- Font: Google Sans (judul) dan Lato (teks biasa) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <!-- ==================== NAVBAR ==================== -->
+    <header>
+      <nav class="navbar" aria-label="Navigasi Utama">
+        <a href="/" class="logo">inviterania.</a>
+
+        <ul class="nav-menu" id="nav-menu">
+          <li><a href="#home">Beranda</a></li>
+          <li><a href="#catalog">Katalog</a></li>
+          <li><a href="#guestbook">Buku tamu digital</a></li>
+          <li>
+            <a href="#partnership">
+              <span class="label-desktop">Partnership</span>
+              <span class="label-mobile">Join Partnership</span>
+            </a>
+          </li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+
+        <a href="#buat-undangan" class="btn-order">Buat undangan</a>
+        <a href="#" class="btn-login">Login</a>
+
+        <button
+          class="nav-toggle"
+          aria-label="Buka menu"
+          aria-expanded="false"
+          aria-controls="nav-menu"
+        >
+          Menu
+        </button>
+      </nav>
+
+      <!-- Lapisan gelap di belakang menu mobile -->
+      <div class="nav-overlay"></div>
+    </header>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="hero" id="home">
+      <div class="hero-content">
+        <p class="hero-label">Undangan Pernikahan Digital</p>
+
+        <h1>
+          Undangan digital jadi dalam 5&nbsp;menit,
+          <!-- Frasa di bawah berganti otomatis (lihat script.js, bagian Hero) -->
+          <span class="rotator">
+            <span class="rotator-inner">
+              <span class="rotator-text" id="rotator-text">tanpa ribet.</span>
+              <span
+                class="rotator-caret"
+                id="rotator-caret"
+                aria-hidden="true"
+              ></span>
+            </span>
+          </span>
+        </h1>
+
+        <p class="hero-desc">
+          Bisa diubah berkali-kali tanpa takut revisi.<br />
+          Fitur lengkap untuk semua kebutuhan undangan digitalmu.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#catalog" class="btn">Lihat Katalog</a>
+          <!-- Tujuan tombol ini masih sementara -->
+          <a href="#" class="btn-dark btn">Buat preview gratis</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== KATALOG TEMA ==================== -->
+    <!-- Gambar tema masih sementara; ganti dengan mockup sendiri.
+         Setiap kartu memakai struktur yang sama, hanya isinya yang berbeda.
+         data-category disiapkan untuk filter kategori nanti. -->
+    <section class="catalog" id="catalog">
+      <div class="section-head">
+        <h2>Pilih desain undanganmu</h2>
+        <p>
+          Setiap desain undangan dari kami dirancang minimalis dan elegan,
+          dengan selalu mengutamakan estetika modern, responsif di setiap
+          perangkat dan ringan.
+        </p>
+      </div>
+
+      <div class="catalog-grid">
+        <article class="theme-card" data-category="premium">
+          <img
+            src="https://attarivitation.com/wp-content/uploads/2026/02/UTARY-SLIDE-1.webp"
+            alt="Tema undangan Premium Theme 1"
+            width="400"
+            height="500"
+            loading="lazy"
+          />
+          <div class="theme-info">
+            <h3>Premium Theme 1</h3>
+            <p class="theme-price">
+              <span class="price-now">Rp 123.456</span>
+              <s class="price-old">Rp 999.999</s>
+            </p>
+          </div>
+          <a href="#" class="btn btn-dark">Preview</a>
+        </article>
+
+        <article class="theme-card" data-category="premium">
+          <img
+            src="https://attarivitation.com/wp-content/uploads/2026/02/UTARY-SLIDE-1.webp"
+            alt="Tema undangan Premium Theme 2"
+            width="400"
+            height="500"
+            loading="lazy"
+          />
+          <div class="theme-info">
+            <h3>Premium Theme 2</h3>
+            <p class="theme-price">
+              <span class="price-now">Rp 123.456</span>
+              <s class="price-old">Rp 999.999</s>
+            </p>
+          </div>
+          <a href="#" class="btn btn-dark">Preview</a>
+        </article>
+
+        <article class="theme-card" data-category="premium">
+          <img
+            src="https://attarivitation.com/wp-content/uploads/2026/02/UTARY-SLIDE-1.webp"
+            alt="Tema undangan Premium Theme 3"
+            width="400"
+            height="500"
+            loading="lazy"
+          />
+          <div class="theme-info">
+            <h3>Premium Theme 3</h3>
+            <p class="theme-price">
+              <span class="price-now">Rp 123.456</span>
+              <s class="price-old">Rp 999.999</s>
+            </p>
+          </div>
+          <a href="#" class="btn btn-dark">Preview</a>
+        </article>
+
+        <article class="theme-card" data-category="premium">
+          <img
+            src="https://attarivitation.com/wp-content/uploads/2026/02/UTARY-SLIDE-1.webp"
+            alt="Tema undangan Premium Theme 4"
+            width="400"
+            height="500"
+            loading="lazy"
+          />
+          <div class="theme-info">
+            <h3>Premium Theme 4</h3>
+            <p class="theme-price">
+              <span class="price-now">Rp 123.456</span>
+              <s class="price-old">Rp 999.999</s>
+            </p>
+          </div>
+          <a href="#" class="btn btn-dark">Preview</a>
+        </article>
+      </div>
+    </section>
+
+    <!-- ==================== CARA KERJA ==================== -->
+    <section class="how" id="how">
+      <div class="section-head">
+        <h2>Cara Kerjanya</h2>
+        <p>Empat langkah dari memilih tema sampai undangan siap dibagikan.</p>
+      </div>
+
+      <!-- Nomor langkah dibuat otomatis oleh CSS -->
+      <ol class="steps">
+        <li class="step">
+          <h3>Pilih tema undangan</h3>
+          <p>Telusuri katalog dan pilih desain yang paling cocok.</p>
+        </li>
+        <li class="step">
+          <h3>Isi data mempelai</h3>
+          <p>Masukkan nama, tanggal, lokasi, foto, dan musik.</p>
+        </li>
+        <li class="step">
+          <h3>Lihat live preview</h3>
+          <p>
+            Datamu langsung terpasang di tema pilihan. Ganti tema kapan saja
+            tanpa mengisi ulang.
+          </p>
+        </li>
+        <li class="step">
+          <h3>Bayar &amp; bagikan</h3>
+          <p>
+            Bayar hanya kalau sudah cocok. Link yang sama langsung aktif dan
+            siap dikirim.
+          </p>
+        </li>
+      </ol>
+
+      <div class="how-cta">
+        <a href="#" class="btn btn-dark">Buat Preview Undangan</a>
+      </div>
+    </section>
+    <!-- ==================== GUEST BOOK ==================== -->
+    <section class="guestbook" id="guestbook">
+      <div class="guestbook-text">
+        <p class="section-label">Layanan tambahan</p>
+        <h2>Catat kehadiran tamu cukup dengan scan QR.</h2>
+        <p class="guestbook-intro">
+          jadikan proses pendataan tamu undangan mudah dan cepat.
+        </p>
+
+        <ul class="guestbook-points">
+          <li>
+            <h3>QR otomatis dari link undangan</h3>
+            <p>
+              Nama tamu di link undangan berubah jadi kode QR. Scan saat tamu
+              tiba, kehadiran langsung terdata.
+            </p>
+          </li>
+          <li>
+            <h3>Input kehadiran otomatis &amp; manual</h3>
+            <p>
+              Daftar hadir terisi sendiri dan tetap bisa kamu edit. Tamu tanpa
+              undangan bisa diinput manual
+            </p>
+          </li>
+          <li>
+            <h3>Pilih tema buku tamu &amp; download langsung</h3>
+            <p>
+              Sesuaikan tampilan buku tamu digital, lalu download langsung
+              sebagai PDF.
+            </p>
+          </li>
+        </ul>
+
+        <a href="#" class="btn btn-dark">Pelajari lebih lanjut</a>
+      </div>
+
+      <img
+        src="https://attarivitation.com/wp-content/uploads/2026/02/UTARY-SLIDE-1.webp"
+        alt="buku tamu digital"
+        width="500"
+        height="500"
+        loading="lazy"
+      />
+    </section>
+
+    <section class="partnership" id="partnership">
+      <div class="section-head">
+        <p class="section-label">Program Partnership</p>
+        <h2>
+          Jual undangan digital tanpa perlu punya website atau bisa coding.
+        </h2>
+        <p>Tawarkan ke calon klienmu, kami yang mengurus sisanya.</p>
+      </div>
+
+      <ul class="partnership-benefits">
+        <li class="benefit">
+          <h3>Langsung siap jualan</h3>
+          <p>Cukup jadi member, kamu langsung dapat link unik dan dashboard.</p>
+        </li>
+        <li class="benefit">
+          <h3>Klien mengisi form sendiri</h3>
+          <p>
+            Kamu hanya mengarahkan klien ke link-mu. Pembuatan dan prosesnya
+            kami yang urus.
+          </p>
+        </li>
+        <li class="benefit">
+          <h3>Penjualan tercatat otomatis</h3>
+          <p>setiap klien dari link-mu terhitung atas namamu.</p>
+        </li>
+        <li class="benefit">
+          <h3>Komisi bertahap</h3>
+          <p>Semakin banyak undangan terjual, semakin besar komisimu.</p>
+        </li>
+      </ul>
+
+      <div class="partnership-cta">
+        <a href="#" class="btn">Daftar Partnership</a>
+        <a href="#" class="partnership-link">Pelajari sistem Partnership</a>
+      </div>
+    </section>
+
+    <section class="faq" id="faq">
+      <div class="section-head">
+        <h2>Pertanyaan yang sering diajukan</h2>
+        <p>Jawaban singkat untuk hal-hal yang paling sering ditanyakan.</p>
+      </div>
+
+      <div class="faq-groups">
+        <!-- ----- Undangan digital ----- -->
+        <div class="faq-group">
+          <h3>Undangan digital</h3>
+
+          <details class="faq-item">
+            <summary>
+              Apakah preview benar-benar gratis? Kapan saya mulai membayar?
+            </summary>
+            <p>
+              Ya, membuat preview gratis. Link preview berlaku 1 hari. Kalau
+              sudah cocok, kamu bisa langsung membayarnya. Kalau belum siap,
+              datamu tersimpan 7 hari sejak aktivitas terakhir dan bisa
+              dilanjutkan lewat link di email.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Bisakah data diubah setelah undangan aktif?</summary>
+            <p>
+              Bisa, tanpa batas. Kamu bisa mengubah data undangan berkali-kali.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Berapa lama masa aktif undangan?</summary>
+            <p>
+              Setelah pembayaran, undangan aktif selama 1 tahun. Kamu bisa
+              memperpendek masa aktifnya (sampai 7, 30, 90, atau 180 hari
+              setelah hari H) tanpa pengembalian dana, atau memperpanjangnya
+              dengan biaya tambahan. Setelah masa aktif habis, link undangan
+              tidak bisa diakses lagi.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Metode pembayaran apa yang tersedia?</summary>
+            <p>
+              Pembayaran diproses lewat Midtrans, jadi metode yang tersedia
+              mengikuti pilihan di halaman pembayaran.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Apakah saya harus membuat akun?</summary>
+            <p>
+              Tidak. Untuk mencoba preview gratis, cukup isi email dan nomor HP.
+              Setelah pembayaran, akunmu aktif otomatis dengan email tersebut.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Bagaimana kebijakan refund?</summary>
+            <p>
+              Refund hanya bisa dilakukan jika ada kendala teknis dari pihak
+              kami yang membuat kamu tidak menerima produk sebagaimana mestinya.
+              Kalau produk berfungsi sebagaimana mestinya, pembatalan dari pihak
+              pelanggan setelah undangan jadi tidak dapat direfund. Kebijakan
+              lengkap ada di halaman <a href="#">Refund</a>.
+            </p>
+          </details>
+        </div>
+
+        <!-- ----- Buku tamu digital ----- -->
+        <div class="faq-group">
+          <h3>Buku tamu digital</h3>
+
+          <details class="faq-item">
+            <summary>
+              Apa itu buku tamu digital, dan apakah wajib dipakai?
+            </summary>
+            <p>
+              Layanan untuk membantu mendata kehadiran tamu di hari-H. Setiap
+              tamu mendapat QR unik yang di-scan saat tiba. Sifatnya layanan
+              tambahan (add-on), jadi tidak wajib.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Bisakah dipesan terpisah dari undangan?</summary>
+            <p>Bisa, tanpa harus memesan undangan digital dari kami.</p>
+          </details>
+
+          <details class="faq-item">
+            <summary>
+              Perangkat apa yang dibutuhkan, dan apakah perlu internet?
+            </summary>
+            <p>
+              Dibutuhkan dua perangkat: satu untuk scan QR (kamera HP atau alat
+              scanner barcode), dan satu untuk mengoperasikan dashboard admin
+              (iPad, laptop, atau HP). Koneksi internet diperlukan agar
+              terhubung ke server kami.
+            </p>
+          </details>
+        </div>
+
+        <!-- ----- Program partnership ----- -->
+        <div class="faq-group">
+          <h3>Program partnership</h3>
+
+          <details class="faq-item">
+            <summary>Apakah daftar jadi partner gratis atau berbayar?</summary>
+            <p>Gratis.</p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Bagaimana sistem komisinya?</summary>
+            <p>
+              Kamu mendapat komisi untuk setiap undangan yang terjual
+              lewat referralmu, dan berlaku juga untuk setiap sesi buku tamu
+              digital. Ada juga bonus bulanan jika kamu mencapai target
+              kelipatan 15 undangan (buku tamu tidak dihitung untuk target ini).
+              Perpanjangan masa aktif tidak menambah komisi.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Kapan dan bagaimana komisi dibayarkan?</summary>
+            <p>
+              Komisi masuk saldomu saat client membayar, dan dapat dicairkan
+              sehari setelahnya. Pembayaran dilakukan otomatis setiap tanggal 25
+              lewat transfer bank atau e-wallet, bersama bonus bulan sebelumnya.
+              Ada minimal pencairan dana di Rp40.000, dan saldo di
+              bawahnya terbawa ke bulan berikutnya, tidak hangus. Pencairan
+              pertama tanpa minimal, biaya transfer kami yang tanggung, dan nama
+              pemilik rekening harus sama dengan nama partner terdaftar.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Bagaimana penjualan saya terlacak?</summary>
+            <p>
+              Setiap partner punya link dan kode referral unik. Dari dashboard,
+              kamu bisa memantau client yang memakainya. Client yang memakai
+              referral mendapat diskon 5%. Client yang mengisi form tanpa
+              referral tidak mendapat diskon, dan penjualannya tidak tercatat
+              atas namamu. Referral yang pertama terpasang yang berlaku, dan
+              terkunci saat pembayaran.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Siapa yang menangani client saya?</summary>
+            <p>
+              Pertanyaan dan kebutuhan client setelahnya ditangani tim kami.
+              Tugasmu mencari client dan membagikan link.
+            </p>
+          </details>
+        </div>
+      </div>
+
+      <p class="faq-more"><a href="#">Lihat semua pertanyaan</a></p>
+    </section>
+
+    <script>
+
+      /* ==========================================================
+   script.js — Inviterania
+
+   Daftar isi:
+   0. Umum
+   1. Navbar: latar saat di-scroll dan menu mobile
+   2. Hero: teks yang berganti-ganti
+   3. Menjalankan semuanya
+   ========================================================== */
+
+
+/* ==========================================================
+   0. UMUM
+   ========================================================== */
+
+// Safari iOS: mencegah zoom lewat gestur cubit
+document.addEventListener("gesturestart", (event) => event.preventDefault());
+
+
+/* ==========================================================
+   1. NAVBAR
+   ========================================================== */
+
+function initNavbar() {
+  const header = document.querySelector("header");
+  const menuButton = document.querySelector(".nav-toggle");
+  const menu = document.getElementById("nav-menu");
+  const overlay = document.querySelector(".nav-overlay");
+
+  // Setelah halaman digulir sejauh ini, latar blur navbar muncul
+  const SCROLL_THRESHOLD_PX = 24;
+
+  // Harus sama dengan breakpoint desktop di style.css
+  const desktopQuery = window.matchMedia("(min-width: 768px)");
+
+  // ----- Latar blur saat halaman di-scroll -----
+
+  function updateHeaderBackground() {
+    header.classList.toggle("is-scrolled", window.scrollY > SCROLL_THRESHOLD_PX);
+  }
+
+  updateHeaderBackground(); // jalankan sekali, kalau halaman dimuat sudah dalam posisi ter-scroll
+  window.addEventListener("scroll", updateHeaderBackground, { passive: true });
+
+  // ----- Menu mobile: buka dan tutup -----
+
+  function setMenuOpen(isOpen) {
+    document.body.classList.toggle("menu-open", isOpen);
+    menuButton.setAttribute("aria-expanded", isOpen);
+    menuButton.setAttribute("aria-label", isOpen ? "Tutup menu" : "Buka menu");
+    menuButton.textContent = isOpen ? "Tutup" : "Menu";
+  }
+
+  menuButton.addEventListener("click", () => {
+    const isOpen = menuButton.getAttribute("aria-expanded") === "true";
+    setMenuOpen(!isOpen);
+  });
+
+  // Menu menutup saat overlay diklik
+  overlay.addEventListener("click", () => setMenuOpen(false));
+
+  // Menu menutup saat salah satu link di dalamnya diklik
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setMenuOpen(false));
+  });
+
+  // Menu menutup dengan tombol Esc
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMenuOpen(false);
+  });
+
+  // Kalau layar diperbesar ke ukuran desktop saat menu terbuka, tutup menunya
+  desktopQuery.addEventListener("change", (event) => {
+    if (event.matches) setMenuOpen(false);
+  });
+
+  // ----- Matikan transisi sementara saat jendela diubah ukurannya -----
+  // Tanpa ini, menu terlihat meluncur sendiri ketika melewati breakpoint.
+
+  let resizeTimer;
+
+  window.addEventListener("resize", () => {
+    document.body.classList.add("no-transition");
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      document.body.classList.remove("no-transition");
+    }, 100);
+  });
+}
+
+
+/* ==========================================================
+   2. HERO: TEKS YANG BERGANTI-GANTI
+   Efek: teks "disapu" keluar, diganti, lalu "disapu" masuk,
+   dengan kursor yang bergerak mengikuti tepi sapuan.
+   ========================================================== */
+
+function initHeroRotator() {
+  const rotator = document.querySelector(".rotator");
+  const box = document.querySelector(".rotator-inner"); // kotak pembungkus teks dan kursor
+  const textEl = document.getElementById("rotator-text");
+  const caretEl = document.getElementById("rotator-caret");
+
+  if (!rotator || !box || !textEl || !caretEl) return;
+
+  // ----- Pengaturan: ubah di sini -----
+
+  const PHRASES = ["tanpa ribet.", "tanpa lama.", "tanpa batas revisi."];
+
+  const WIPE_OUT_MS = 650; // lama teks menyapu keluar
+  const WIPE_IN_MS = 900; // lama teks menyapu masuk
+  const HOLD_MS = 2400; // lama frasa dibiarkan terbaca
+  const EASING = "cubic-bezier(0.65, 0, 0.35, 1)"; // pelan di awal dan akhir, cepat di tengah
+
+  // Mode "kurangi gerakan": hanya memudar, tanpa sapuan
+  const REDUCED_EXTRA_HOLD_MS = 1500;
+  const REDUCED_FADE_MS = 300;
+
+  // Bentuk potongan teks: tersembunyi (kanan dipotong 100%) dan terlihat penuh
+  const CLIP_HIDDEN = "inset(-0.2em 100% -0.2em 0)";
+  const CLIP_SHOWN = "inset(-0.2em -0.1em -0.2em 0)";
+
+  // ----- Alat bantu -----
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const getTextWidth = () => textEl.getBoundingClientRect().width;
+
+  // Menganimasikan satu properti CSS, lalu menyimpan hasil akhirnya
+  async function animateProperty(element, property, from, to, duration) {
+    const animation = element.animate(
+      [{ [property]: from }, { [property]: to }],
+      { duration, easing: EASING, fill: "forwards" }
+    );
+
+    await animation.finished;
+    element.style[property] = to; // simpan keadaan akhir
+    animation.cancel(); // lepas animasi supaya tidak menumpuk
+  }
+
+  // Kunci lebar kotak sesuai teks saat ini, supaya lebarnya bisa dianimasikan
+  function lockBoxWidth() {
+    box.style.width = getTextWidth() + "px";
+  }
+
+  // ----- Langkah-langkah animasi -----
+
+  // Menyapu teks dan kursor bersamaan: show = true (masuk), false (keluar)
+  function wipe(show, duration) {
+    return Promise.all([
+      animateProperty(
+        textEl,
+        "clipPath",
+        show ? CLIP_HIDDEN : CLIP_SHOWN,
+        show ? CLIP_SHOWN : CLIP_HIDDEN,
+        duration
+      ),
+      animateProperty(
+        caretEl,
+        "left",
+        show ? "0%" : "100%",
+        show ? "100%" : "0%",
+        duration
+      ),
+    ]);
+  }
+
+  // Meluncurkan lebar kotak ke lebar frasa baru (teks masih tersembunyi),
+  // supaya kursor bergerak halus ke posisi awal yang baru, bukan melompat
+  async function glideBoxTo(newWidth) {
+    const oldWidth = box.getBoundingClientRect().width;
+    const difference = Math.abs(newWidth - oldWidth);
+    if (difference < 1) return;
+
+    // Selisih besar = durasi lebih lama, maksimal 500 ms
+    const duration = Math.min(500, 150 + difference * 2);
+    await animateProperty(box, "width", oldWidth + "px", newWidth + "px", duration);
+  }
+
+  // ----- Mode penuh: sapuan dan kursor -----
+
+  async function runFullAnimation() {
+    let phraseIndex = 0;
+
+    lockBoxWidth();
+    rotator.classList.add("is-idle");
+    await sleep(HOLD_MS);
+
+    while (true) {
+      rotator.classList.remove("is-idle");
+
+      await wipe(false, WIPE_OUT_MS); // 1. sapu teks keluar
+
+      phraseIndex = (phraseIndex + 1) % PHRASES.length;
+      textEl.textContent = PHRASES[phraseIndex]; // 2. ganti teks (sedang tersembunyi)
+
+      await glideBoxTo(getTextWidth()); // 3. kursor meluncur ke awal yang baru
+      await wipe(true, WIPE_IN_MS); // 4. sapu teks baru masuk
+
+      rotator.classList.add("is-idle");
+      await sleep(HOLD_MS);
+    }
+  }
+
+  // ----- Mode kurangi gerakan: hanya memudar -----
+
+  async function runReducedMotion() {
+    let phraseIndex = 0;
+
+    caretEl.style.display = "none";
+    box.style.width = "auto";
+
+    while (true) {
+      await sleep(HOLD_MS + REDUCED_EXTRA_HOLD_MS);
+      await animateProperty(textEl, "opacity", "1", "0", REDUCED_FADE_MS);
+
+      phraseIndex = (phraseIndex + 1) % PHRASES.length;
+      textEl.textContent = PHRASES[phraseIndex];
+
+      await animateProperty(textEl, "opacity", "0", "1", REDUCED_FADE_MS);
+    }
+  }
+
+  // ----- Menyesuaikan lebar kotak saat layar berubah -----
+  // Perubahan tinggi saja (address bar HP naik-turun) diabaikan.
+
+  let lastWindowWidth = window.innerWidth;
+
+  function handleResize() {
+    if (window.innerWidth === lastWindowWidth) return;
+    lastWindowWidth = window.innerWidth;
+    lockBoxWidth();
+  }
+
+  // ----- Mulai -----
+
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  // Tunggu font selesai dimuat, supaya lebar teks yang diukur akurat
+  document.fonts.ready.then(() => {
+    if (prefersReducedMotion) {
+      runReducedMotion();
+    } else {
+      window.addEventListener("resize", handleResize);
+      runFullAnimation();
+    }
+  });
+}
+
+  /*3. FAQ: ANIMASI BUKA-TUTUP JAWABAN */
+
+function initFaqAnimation() {
+  const items = document.querySelectorAll(".faq-item");
+ 
+  // ----- Pengaturan: ubah di sini -----
+ 
+  const DURATION_MS = 300;
+  const EASING = "cubic-bezier(0.65, 0, 0.35, 1)"; // sama dengan animasi hero: halus di awal dan akhir
+ 
+  // Pengguna yang memilih "kurangi gerakan" tetap mendapat buka-tutup
+  // bawaan browser, tanpa animasi
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+ 
+  if (prefersReducedMotion) return;
+ 
+  items.forEach((item) => {
+    if (typeof item.animate !== "function") return; // browser lama: pakai bawaan
+ 
+    const summary = item.querySelector("summary");
+    let animation = null; // animasi yang sedang berjalan pada item ini
+ 
+    // Menganimasikan tinggi dari 'from' ke 'to' (dalam piksel)
+    function runAnimation(from, to, isClosing) {
+      item.style.overflow = "hidden"; // isi yang belum terlihat dipotong
+      item.classList.toggle("is-closing", isClosing);
+ 
+      const current = item.animate(
+        { height: [`${from}px`, `${to}px`] },
+        { duration: DURATION_MS, easing: EASING }
+      );
+      animation = current;
+ 
+      // onfinish hanya berjalan kalau animasi selesai sendiri.
+      // Kalau dibatalkan oleh klik berikutnya, animasi baru yang membereskan.
+      current.onfinish = () => {
+        if (isClosing) item.open = false; // baru ditutup sungguhan setelah selesai
+        item.classList.remove("is-closing");
+        item.style.overflow = "";
+        animation = null;
+      };
+    }
+ 
+    summary.addEventListener("click", (event) => {
+      event.preventDefault(); // cegah buka-tutup bawaan browser
+ 
+      // 1. Tinggi saat ini. Kalau animasi sebelumnya masih berjalan, ini
+      //    tinggi di tengah animasi, jadi gerakan berbalik dengan mulus.
+      const startHeight = item.offsetHeight;
+ 
+      // 2. Hentikan animasi sebelumnya
+      animation?.cancel();
+ 
+      // 3. Sedang membuka kalau: item tertutup, atau sedang dalam proses menutup
+      const isOpening = !item.open || item.classList.contains("is-closing");
+ 
+      // 4. Ukur tinggi tujuan.
+      //    Isi harus ada di tata letak dulu supaya tinggi terbukanya bisa diukur.
+      item.classList.remove("is-closing");
+      item.open = true;
+      const openHeight = item.offsetHeight;
+ 
+      // Tinggi tertutup = tinggi summary + garis tepi item
+      const borderHeight = item.offsetHeight - item.clientHeight;
+      const closedHeight = summary.offsetHeight + borderHeight;
+ 
+      // 5. Jalankan animasi
+      if (isOpening) {
+        runAnimation(startHeight, openHeight, false);
+      } else {
+        runAnimation(startHeight, closedHeight, true);
+      }
+    });
+  });
+}
+/* ==========================================================
+   4. MENJALANKAN SEMUANYA
+   ========================================================== */
+
+initNavbar();
+initHeroRotator();
+initFaqAnimation();
+
+    </script>
+  </body>
+</html>
